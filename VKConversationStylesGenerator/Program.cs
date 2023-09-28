@@ -58,7 +58,7 @@ return {
         static Dictionary<string, List<StyleLang>> Names;
 
         static void Main(string[] args) {
-            Console.WriteLine("VK CSG (Conversation Styles Generator) v1.0.1 by Elchin Orujov (ELOR).");
+            Console.WriteLine("VK CSG (Conversation Styles Generator) v1.0.2 by Elchin Orujov (ELOR).");
             if (args.Length == 0) {
                 WriteInstruction();
             } else {
@@ -134,7 +134,7 @@ return {
                     Names = Names
                 };
 
-                string json = JsonConvert.SerializeObject(output);
+                string json = JsonConvert.SerializeObject(output, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
                 File.WriteAllText(OutputPath, json);
 
                 Console.WriteLine($"OK!");
