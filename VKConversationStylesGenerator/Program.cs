@@ -17,15 +17,16 @@ var forks = {
   '2': fork(API.messages.getBackgrounds()),
   '3': fork(API.messages.getConversationStyles())
 };
-var response = {
+var r = {
   'appearances': wait(forks['1']),
   'backgrounds': wait(forks['2']),
   'styles': wait(forks['3'])
 };
-response.appearances = response.appearances.appearances;
-response.backgrounds = response.backgrounds.backgrounds;
-response.styles = response.styles.items;
-return response;
+return {
+  'appearances': r.appearances.appearances,
+  'backgrounds': r.backgrounds.backgrounds,
+  'styles': r.styles.items,
+};
 ";
 
         static string execLangCode = @"
@@ -42,10 +43,10 @@ var r = {
   'lang_az': wait(forks['4']),
 };
 return {
-	'en': r.lang_en.styles,
-	'ru': r.lang_ru.styles,
-	'uk': r.lang_uk.styles,
-	'az': r.lang_az.styles
+  'en': r.lang_en.styles,
+  'ru': r.lang_ru.styles,
+  'uk': r.lang_uk.styles,
+  'az': r.lang_az.styles
 };
 ";
 
@@ -57,7 +58,7 @@ return {
         static Dictionary<string, List<StyleLang>> Names;
 
         static void Main(string[] args) {
-            Console.WriteLine("VK CSG (Conversation Styles Generator) v1.0 by Elchin Orujov (ELOR).");
+            Console.WriteLine("VK CSG (Conversation Styles Generator) v1.0.1 by Elchin Orujov (ELOR).");
             if (args.Length == 0) {
                 WriteInstruction();
             } else {
@@ -73,7 +74,6 @@ return {
                 }
 
                 if (Path.EndsInDirectorySeparator(OutputPath)) OutputPath = Path.Combine(OutputPath, "chat_styles.json");
-                Console.WriteLine($"Token is {AccessToken.Substring(0, 8)}********{AccessToken.Substring(AccessToken.Length - 8)}");
                 Console.WriteLine($"Output file is {OutputPath}");
                 Console.WriteLine($"Remove unnecessary backgrounds: {RemoveUnnecessaryBackgrounds}\n");
 
