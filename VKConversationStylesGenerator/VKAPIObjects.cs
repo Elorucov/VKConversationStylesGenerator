@@ -93,7 +93,7 @@ namespace VKConversationStylesGenerator {
         [JsonProperty("svg")]
         public VectorBackgroundSource SVG { get; set; }
 
-        [JsonProperty("color_ellpises")]
+        [JsonProperty("color_ellipses")]
         public List<ColorEllipse> ColorEllipses { get; set; }
 
         [JsonProperty("gradient")]

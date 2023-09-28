@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 
@@ -58,31 +59,33 @@ return {
         static Dictionary<string, List<StyleLang>> Names;
 
         static void Main(string[] args) {
-            Console.WriteLine("VK CSG (Conversation Styles Generator) v1.0.2 by Elchin Orujov (ELOR).");
-            if (args.Length == 0) {
-                WriteInstruction();
-            } else {
-                foreach (string arg in args) {
-                    if (arg.StartsWith("-t=")) {
-                        AccessToken = arg.Substring(3);
-                    } else if (arg.StartsWith("-o=")) {
-                        string path = arg.Substring(3);
-                        if (Path.IsPathFullyQualified(path)) OutputPath = path;
-                    } else if (arg == "-b") {
-                        RemoveUnnecessaryBackgrounds = true;
-                    }
+            var ver = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+            Console.WriteLine($"VK Conversation Styles Generator v{ver} by Elchin Orujov (ELOR)");
+            foreach (string arg in args) {
+                if (arg.StartsWith("-t=")) {
+                    AccessToken = arg.Substring(3);
+                } else if (arg.StartsWith("-o=")) {
+                    string path = arg.Substring(3);
+                    if (Path.IsPathFullyQualified(path)) OutputPath = path;
+                } else if (arg == "-b") {
+                    RemoveUnnecessaryBackgrounds = true;
                 }
-
-                if (Path.EndsInDirectorySeparator(OutputPath)) OutputPath = Path.Combine(OutputPath, "chat_styles.json");
-                Console.WriteLine($"Output file is {OutputPath}");
-                Console.WriteLine($"Remove unnecessary backgrounds: {RemoveUnnecessaryBackgrounds}\n");
-
-                Start().Wait();
-                SecondPhase().Wait();
-                ProcessAndSave();
-
-                Console.WriteLine("All done!");
             }
+
+#if DEBUG
+            AccessToken = "YOUR_ACCESS_TOKEN_FOR_DEBUG_PURPOSES";
+#endif
+
+            if (String.IsNullOrWhiteSpace(AccessToken)) WriteInstructionAndQuit();
+            if (Path.EndsInDirectorySeparator(OutputPath)) OutputPath = Path.Combine(OutputPath, "chat_styles.json");
+            Console.WriteLine($"Output file is {OutputPath}");
+            Console.WriteLine($"Remove unnecessary backgrounds: {RemoveUnnecessaryBackgrounds}\n");
+
+            Start().Wait();
+            SecondPhase().Wait();
+            ProcessAndSave();
+
+            Console.WriteLine("All done!");
         }
 
         private static async Task Start() {
@@ -144,11 +147,12 @@ return {
             }
         }
 
-        private static void WriteInstruction() {
+        private static void WriteInstructionAndQuit() {
             Console.WriteLine("Usage: vkcsg -t=ACCESS_TOKEN -o=OUTPUT -b");
             Console.WriteLine("-t (required) — access token from official VK app (android, ios or vk messenger);");
             Console.WriteLine("-o (optional) — output path. If a file with the same name exist, it will be overwritten;");
             Console.WriteLine("-b (optional) — don't add unnecessary backgrounds whose IDs are not in styles.");
+            Process.GetCurrentProcess().Kill();
         }
 
         private static void WriteErrorAndQuit(Exception ex) {

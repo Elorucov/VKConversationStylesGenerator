@@ -5,8 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <AssemblyName>vkcsg</AssemblyName>
-    <AssemblyVersion>1.0.2</AssemblyVersion>
-    <FileVersion>1.0.2</FileVersion>
+    <Version>1.0.3</Version>
+    <FileVersion>1.0.3</FileVersion>
 	<PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
   <ItemGroup>
