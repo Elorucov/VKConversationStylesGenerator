@@ -57,7 +57,7 @@ return {
         static string OutputPath = Environment.CurrentDirectory + Path.DirectorySeparatorChar;
         static string AccessToken;
         static bool RemoveUnnecessaryBackgrounds = false;
-        static bool DownloadBackgrounds = false;
+        static string BackgroundsURLPath = String.Empty;
 
         static ExecStylesResponse StylesInfo;
         static Dictionary<string, List<StyleLang>> Names;
@@ -73,8 +73,10 @@ return {
                     if (Path.IsPathFullyQualified(path)) OutputPath = path;
                 } else if (arg == "-b") {
                     RemoveUnnecessaryBackgrounds = true;
-                } else if (arg == "-d") {
-                    DownloadBackgrounds = true;
+                } else if (arg.StartsWith("-d=")) {
+                    string url = arg.Substring(3);
+                    if (Uri.IsWellFormedUriString(url, UriKind.Absolute)) BackgroundsURLPath = url;
+                    if (!BackgroundsURLPath.EndsWith("/")) BackgroundsURLPath = BackgroundsURLPath + "/";
                 }
             }
 
@@ -86,7 +88,7 @@ return {
             if (Path.EndsInDirectorySeparator(OutputPath)) OutputPath = Path.Combine(OutputPath, "chat_styles.json");
             Console.WriteLine($"Output file is {OutputPath}");
             Console.WriteLine($"Remove unnecessary backgrounds: {RemoveUnnecessaryBackgrounds}\n");
-            Console.WriteLine($"Download backgrounds: {DownloadBackgrounds}\n");
+            if (!String.IsNullOrEmpty(BackgroundsURLPath)) Console.WriteLine($"The backgrounds will be downloaded in output folder and their URL will be changed to \"{BackgroundsURLPath}/file.png\"\n");
 
             Start().Wait();
             SecondPhase().Wait();
@@ -137,7 +139,7 @@ return {
                 }
 
                 // Download backgrounds
-                if (DownloadBackgrounds) {
+                if (!String.IsNullOrEmpty(BackgroundsURLPath)) {
                     for (ushort i = 0; i < StylesInfo.Backgrounds.Count; i++) {
                         var background = StylesInfo.Backgrounds[i];
                         DownloadBackgroundAsync(background.Id + "_light", background.Light).Wait();
@@ -166,7 +168,7 @@ return {
         }
 
         private static async Task DownloadBackgroundAsync(string name, BackgroundSources background) {
-            Console.Write($"Downloading background \"{name}\". Type: {background.Type}...");
+            Console.Write($"Downloading background \"{name}\". Type: {background.Type}... ");
             string link = String.Empty;
 
             if (background.Type == "vector" && background.Vector != null) {
@@ -188,20 +190,23 @@ return {
             File.WriteAllBytes(Path.Combine(outputFolder, outputFileName), data);
 
             if (background.Type == "vector" && background.Vector != null) {
-                background.Vector.SVG.Url = outputFileName;
+                background.Vector.SVG.Url = $"{BackgroundsURLPath}{outputFileName}";
             } else if (background.Type == "raster" && background.Raster != null) {
-                background.Raster.Url = outputFileName;
+                background.Raster.Url = $"{BackgroundsURLPath}{outputFileName}";
             }
 
             Console.WriteLine($"OK! (file name: {outputFileName})");
         }
 
         private static void WriteInstructionAndQuit() {
-            Console.WriteLine("Usage: vkcsg -t=ACCESS_TOKEN -o=OUTPUT -b -d");
+            Console.WriteLine("Usage: vkcsg -t=ACCESS_TOKEN -o=OUTPUT -b -d=URL_FOLDER");
             Console.WriteLine("-t (required) — access token from official VK app (android, ios or vk messenger);");
             Console.WriteLine("-o (optional) — output path. If a file with the same name exist, it will be overwritten;");
             Console.WriteLine("-b (optional) — don't add unnecessary backgrounds whose IDs are not in styles;");
-            Console.WriteLine("-d (optional) — download all backgrounds to output folder. Links of them in output file will be changed to local versions of backgrounds (example: \"url\":\"mable_light.svg\")");
+            Console.WriteLine("-d (optional) — download all backgrounds to output folder. Links of them in output file will be changed to local versions of backgrounds like this: \"url\":\"URL_FOLDER/mable_light.svg\".");
+            Console.WriteLine("");
+            Console.WriteLine("Example: if you want to generate styles file without unnecessary backgrounds, download these backgrounds and then upload it all to your server, type this:");
+            Console.WriteLine("vkcsg-t=TOKEN -o=D:\\Styles\\ -b -d=https://example.com/styles/");
             Process.GetCurrentProcess().Kill();
         }
 
