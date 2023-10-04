@@ -6,6 +6,9 @@ using Newtonsoft.Json;
 
 namespace VKConversationStylesGenerator {
     public class OutputStyles : ExecStylesResponse {
+        [JsonProperty("creation_timestamp")]
+        public long CreationTimestamp { get; set; }
+
         [JsonProperty("names")]
         public Dictionary<string, List<StyleLang>> Names { get; set; }
     }
@@ -54,6 +57,7 @@ return {
         static string OutputPath = Environment.CurrentDirectory + Path.DirectorySeparatorChar;
         static string AccessToken;
         static bool RemoveUnnecessaryBackgrounds = false;
+        static bool DownloadBackgrounds = false;
 
         static ExecStylesResponse StylesInfo;
         static Dictionary<string, List<StyleLang>> Names;
@@ -69,6 +73,8 @@ return {
                     if (Path.IsPathFullyQualified(path)) OutputPath = path;
                 } else if (arg == "-b") {
                     RemoveUnnecessaryBackgrounds = true;
+                } else if (arg == "-d") {
+                    DownloadBackgrounds = true;
                 }
             }
 
@@ -80,6 +86,7 @@ return {
             if (Path.EndsInDirectorySeparator(OutputPath)) OutputPath = Path.Combine(OutputPath, "chat_styles.json");
             Console.WriteLine($"Output file is {OutputPath}");
             Console.WriteLine($"Remove unnecessary backgrounds: {RemoveUnnecessaryBackgrounds}\n");
+            Console.WriteLine($"Download backgrounds: {DownloadBackgrounds}\n");
 
             Start().Wait();
             SecondPhase().Wait();
@@ -118,7 +125,6 @@ return {
         }
 
         private static void ProcessAndSave() {
-            Console.Write($"Building and saving styles to file... ");
             try {
                 // Removing unnecessary backgrounds
                 if (RemoveUnnecessaryBackgrounds) {
@@ -130,7 +136,19 @@ return {
                     StylesInfo.Backgrounds = necessary;
                 }
 
+                // Download backgrounds
+                if (DownloadBackgrounds) {
+                    for (ushort i = 0; i < StylesInfo.Backgrounds.Count; i++) {
+                        var background = StylesInfo.Backgrounds[i];
+                        DownloadBackgroundAsync(background.Id + "_light", background.Light).Wait();
+                        DownloadBackgroundAsync(background.Id + "_dark", background.Dark).Wait();
+                        StylesInfo.Backgrounds[i] = background;
+                    }
+                }
+
+                Console.Write($"Building and saving styles to file... ");
                 var output = new OutputStyles {
+                    CreationTimestamp = DateTimeOffset.Now.ToUnixTimeSeconds(),
                     Appearances = StylesInfo.Appearances,
                     Backgrounds = StylesInfo.Backgrounds,
                     Styles = StylesInfo.Styles,
@@ -147,11 +165,43 @@ return {
             }
         }
 
+        private static async Task DownloadBackgroundAsync(string name, BackgroundSources background) {
+            Console.Write($"Downloading background \"{name}\". Type: {background.Type}...");
+            string link = String.Empty;
+
+            if (background.Type == "vector" && background.Vector != null) {
+                link = background.Vector.SVG?.Url;
+            } else if (background.Type == "raster" && background.Raster != null) {
+                link = background.Raster.Url;
+            }
+            if (String.IsNullOrEmpty(link)) {
+                Console.WriteLine($"Background object or links not found!");
+                return;
+            }
+
+            var split = OutputPath.Split(Path.DirectorySeparatorChar).ToList();
+            split.Remove(split.Last());
+            string outputFolder = String.Join(Path.DirectorySeparatorChar, split);
+            string outputFileName = $"{name}{Path.GetExtension(link)}";
+
+            var data = await httpClient.GetByteArrayAsync(link);
+            File.WriteAllBytes(Path.Combine(outputFolder, outputFileName), data);
+
+            if (background.Type == "vector" && background.Vector != null) {
+                background.Vector.SVG.Url = outputFileName;
+            } else if (background.Type == "raster" && background.Raster != null) {
+                background.Raster.Url = outputFileName;
+            }
+
+            Console.WriteLine($"OK! (file name: {outputFileName})");
+        }
+
         private static void WriteInstructionAndQuit() {
             Console.WriteLine("Usage: vkcsg -t=ACCESS_TOKEN -o=OUTPUT -b");
             Console.WriteLine("-t (required) — access token from official VK app (android, ios or vk messenger);");
             Console.WriteLine("-o (optional) — output path. If a file with the same name exist, it will be overwritten;");
-            Console.WriteLine("-b (optional) — don't add unnecessary backgrounds whose IDs are not in styles.");
+            Console.WriteLine("-b (optional) — don't add unnecessary backgrounds whose IDs are not in styles;");
+            Console.WriteLine("-d (optional) — download all backgrounds to output folder. Links of them in output file will be changed to local versions of backgrounds (example: \"url\":\"mable_light.svg\")");
             Process.GetCurrentProcess().Kill();
         }
 
