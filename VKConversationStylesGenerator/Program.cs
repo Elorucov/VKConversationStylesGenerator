@@ -197,7 +197,7 @@ return {
         }
 
         private static void WriteInstructionAndQuit() {
-            Console.WriteLine("Usage: vkcsg -t=ACCESS_TOKEN -o=OUTPUT -b");
+            Console.WriteLine("Usage: vkcsg -t=ACCESS_TOKEN -o=OUTPUT -b -d");
             Console.WriteLine("-t (required) — access token from official VK app (android, ios or vk messenger);");
             Console.WriteLine("-o (optional) — output path. If a file with the same name exist, it will be overwritten;");
             Console.WriteLine("-b (optional) — don't add unnecessary backgrounds whose IDs are not in styles;");
