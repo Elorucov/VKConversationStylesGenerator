@@ -203,10 +203,10 @@ return {
             Console.WriteLine("-t (required) — access token from official VK app (android, ios or vk messenger);");
             Console.WriteLine("-o (optional) — output path. If a file with the same name exist, it will be overwritten;");
             Console.WriteLine("-b (optional) — don't add unnecessary backgrounds whose IDs are not in styles;");
-            Console.WriteLine("-d (optional) — download all backgrounds to output folder. Links of them in output file will be changed to local versions of backgrounds like this: \"url\":\"URL_FOLDER/mable_light.svg\".");
+            Console.WriteLine("-d (optional) — download all backgrounds to output folder. Links of them in output file will be changed to local version of backgrounds (like this: \"url\":\"URL_FOLDER/mable_light.svg\").");
             Console.WriteLine("");
             Console.WriteLine("Example: if you want to generate styles file without unnecessary backgrounds, download these backgrounds and then upload it all to your server, type this:");
-            Console.WriteLine("vkcsg-t=TOKEN -o=D:\\Styles\\ -b -d=https://example.com/styles/");
+            Console.WriteLine("vkcsg -t=TOKEN -o=D:\\Styles\\ -b -d=https://example.com/styles/");
             Process.GetCurrentProcess().Kill();
         }
 
