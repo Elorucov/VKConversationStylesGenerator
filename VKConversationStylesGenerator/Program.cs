@@ -87,8 +87,9 @@ return {
             if (String.IsNullOrWhiteSpace(AccessToken)) WriteInstructionAndQuit();
             if (Path.EndsInDirectorySeparator(OutputPath)) OutputPath = Path.Combine(OutputPath, "chat_styles.json");
             Console.WriteLine($"Output file is {OutputPath}");
-            Console.WriteLine($"Remove unnecessary backgrounds: {RemoveUnnecessaryBackgrounds}\n");
-            if (!String.IsNullOrEmpty(BackgroundsURLPath)) Console.WriteLine($"The backgrounds will be downloaded in output folder and their URL will be changed to \"{BackgroundsURLPath}/file.png\"\n");
+            Console.WriteLine($"Remove unnecessary backgrounds: {RemoveUnnecessaryBackgrounds}");
+            if (!String.IsNullOrEmpty(BackgroundsURLPath)) Console.WriteLine($"The backgrounds will be downloaded in output folder and their links in output file will be changed to \"{BackgroundsURLPath}file.png\"");
+            Console.WriteLine(String.Empty);
 
             Start().Wait();
             SecondPhase().Wait();
