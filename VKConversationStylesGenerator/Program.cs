@@ -15,11 +15,13 @@ namespace VKConversationStylesGenerator {
 
     public class Program {
 
+        // TODO: messages.getConversationStyles has "extended_styles" parameter
+        // that allowing to return both appearances and backgrounds in one request.
         static string execBaseCode = @"
 var forks = {
-  '1': fork(API.messages.getAppearances()),
-  '2': fork(API.messages.getBackgrounds()),
-  '3': fork(API.messages.getConversationStyles())
+  '1': fork(API.messages.getAppearances({show_hidden: ""1""})),
+  '2': fork(API.messages.getBackgrounds({show_hidden: ""1""})),
+  '3': fork(API.messages.getConversationStyles({show_hidden: ""1""}))
 };
 var r = {
   'appearances': wait(forks['1']),
