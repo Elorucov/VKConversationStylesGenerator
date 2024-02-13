@@ -57,9 +57,6 @@ namespace VKConversationStylesGenerator {
 
         [JsonProperty("height")]
         public double Height { get; set; }
-
-        [JsonProperty("is_hidden")]
-        public bool IsHidden { get; set; }
     }
 
     public class VectorBackgroundSource : BackgroundSource {
@@ -132,6 +129,9 @@ namespace VKConversationStylesGenerator {
 
         [JsonProperty("dark")]
         public BackgroundSources Dark { get; set; }
+		
+        [JsonProperty("is_hidden")]
+        public bool IsHidden { get; set; }
     }
 
     #endregion

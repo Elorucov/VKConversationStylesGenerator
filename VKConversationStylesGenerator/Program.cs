@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -225,7 +226,7 @@ return {
         #region API requests
 
 
-        static HttpClient httpClient = new HttpClient();
+        static HttpClient httpClient = new HttpClient(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All });
 
         private static async Task<T> CallAPIMehodAsync<T>(string method, Dictionary<string, string> parameters = null) {
             if (parameters == null) parameters = new Dictionary<string, string>();
